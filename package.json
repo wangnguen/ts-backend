@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "dev": "nodemon",
-    "dev:ts": "node --import @swc-node/register/esm-register --watch src/index.ts",
+    "dev:ts": "node -r @swc-node/register --watch src/index.ts",
     "build": "rimraf dist && tsc && tsc-alias",
+    "type-check": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

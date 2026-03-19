@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { ReasonPhrases } from 'http-status-codes'
 import { z } from 'zod/v4'
-import { AppError, ValidationError } from '@common/errors/app.error.js'
-import env from '@common/config/env.js'
+import { AppError, ValidationError } from '@common/errors/app.error'
+import env from '@common/config/env'
 
 class ErrorMiddleware {
   static notFound(req: Request, res: Response) {
-    res.notFound(`Route ${req.originalUrl} not found`)
+    res.notFound({ error: `Route ${req.originalUrl} not found` })
   }
 
   static errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
@@ -24,14 +24,14 @@ class ErrorMiddleware {
     }
 
     if (err instanceof AppError) {
-      return res.fail(err.message, err.statusCode)
+      return res.fail({ error: err.message }, { statusCode: err.statusCode })
     }
 
     console.error(err.stack)
-    res.internalError(
-      ReasonPhrases.INTERNAL_SERVER_ERROR,
-      env.NODE_ENV === 'development' ? { message: err.message, stack: err.stack } : undefined
-    )
+    res.internalError({
+      error: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      ...(env.NODE_ENV === 'development' && { message: err.message, stack: err.stack })
+    })
   }
 }
 

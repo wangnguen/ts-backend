@@ -1,12 +1,13 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import rateLimit from 'express-rate-limit'
-import env from '@common/config/env.js'
-import ErrorMiddleware from '@common/middlewares/error.middleware.js'
-import ResponseMiddleware from '@common/middlewares/response.middleware.js'
-import AppDataSource from 'src/databases/data-source.js'
+import env from '@common/config/env'
+import ErrorMiddleware from '@common/middlewares/error.middleware'
+import ResponseMiddleware from '@common/middlewares/response.middleware'
+import AppDataSource from 'src/databases/data-source'
+import moduleRoutes from 'src/modules'
 
 const app: express.Application = express()
 
@@ -56,9 +57,7 @@ AppDataSource.connect().catch((err) => {
 })
 
 // Routes
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ ok: true })
-})
+app.use(moduleRoutes)
 
 // 404 Handler
 app.use(ErrorMiddleware.notFound)

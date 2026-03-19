@@ -1,53 +1,90 @@
 import { Request, Response, NextFunction, Response as ExpressResponse } from 'express'
-import { StatusCodes, ReasonPhrases } from 'http-status-codes'
-import type { ResponseOptions, ValidationErrorItem } from '@common/types/index.js'
+import { ReasonPhrases, StatusCodes } from 'http-status-codes'
+import type { ResponseOptions, ResponseTypeData } from '@common/types/index'
+import { ResponseUtils } from '@common/utils/response.utils'
 
 class ResponseMiddleware {
-  static extendResponse = (_req: Request, res: Response, next: NextFunction) => {
-    res.ok = <T>(data: T, options?: ResponseOptions | string): ExpressResponse => {
-      const opts: ResponseOptions | undefined = typeof options === 'string' ? { message: options } : options
-      return res.status(StatusCodes.OK).json({ success: true, ...opts, data })
+  static extendResponse(_req: Request, res: Response, next: NextFunction) {
+    res.ok = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.OK,
+        message: options?.message || ReasonPhrases.OK,
+        data
+      })
     }
 
-    res.created = <T>(data: T, options?: ResponseOptions | string): ExpressResponse => {
-      const opts: ResponseOptions | undefined = typeof options === 'string' ? { message: options } : options
-      return res.status(StatusCodes.CREATED).json({ success: true, ...opts, data })
+    res.created = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.CREATED,
+        message: options?.message || ReasonPhrases.CREATED,
+        data
+      })
     }
 
-    res.fail = (error: string, statusCode: number = StatusCodes.BAD_REQUEST): ExpressResponse => {
-      return res.status(statusCode).json({ success: false, error })
+    res.fail = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.BAD_REQUEST,
+        message: options?.message || ReasonPhrases.BAD_REQUEST,
+        data
+      })
     }
 
-    res.notFound = (message: string = ReasonPhrases.NOT_FOUND): ExpressResponse => {
-      return res.status(StatusCodes.NOT_FOUND).json({ success: false, error: message })
+    res.notFound = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.NOT_FOUND,
+        message: options?.message || ReasonPhrases.NOT_FOUND,
+        data
+      })
     }
 
-    res.unauthorized = (message: string = ReasonPhrases.UNAUTHORIZED): ExpressResponse => {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, error: message })
+    res.unauthorized = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.UNAUTHORIZED,
+        message: options?.message || ReasonPhrases.UNAUTHORIZED,
+        data
+      })
     }
 
-    res.forbidden = (message: string = ReasonPhrases.FORBIDDEN): ExpressResponse => {
-      return res.status(StatusCodes.FORBIDDEN).json({ success: false, error: message })
+    res.forbidden = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.FORBIDDEN,
+        message: options?.message || ReasonPhrases.FORBIDDEN,
+        data
+      })
     }
 
-    res.validationError = (errors: ValidationErrorItem[]): ExpressResponse => {
-      return res
-        .status(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json({ success: false, error: ReasonPhrases.UNPROCESSABLE_ENTITY, errors })
+    res.validationError = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.UNPROCESSABLE_ENTITY,
+        message: options?.message || ReasonPhrases.UNPROCESSABLE_ENTITY,
+        data
+      })
     }
 
-    res.internalError = (
-      error: string = ReasonPhrases.INTERNAL_SERVER_ERROR,
-      details?: { message?: string; stack?: string }
-    ): ExpressResponse => {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        error,
-        ...details
+    res.internalError = <T>(data: T, options?: ResponseOptions): ExpressResponse => {
+      return this.createResponse(_req, res, {
+        statusCode: options?.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+        message: options?.message || ReasonPhrases.INTERNAL_SERVER_ERROR,
+        data
       })
     }
 
     next()
+  }
+
+  private static createResponse(req: Request, response: Response, options: ResponseTypeData) {
+    return response
+      .status(options?.statusCode || StatusCodes.OK)
+      .json(
+        new ResponseUtils(
+          options.statusCode,
+          options.message,
+          options.data,
+          options.meta,
+          req.baseUrl,
+          new Date().toISOString()
+        )
+      )
   }
 }
 

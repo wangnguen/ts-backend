@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod/v4'
-import { ValidationError } from '@common/errors/app.error.js'
-import type { ValidationErrorItem } from '@common/types/index.js'
+import { ValidationError } from '@common/errors/app.error'
+import type { ValidationErrorItem } from '@common/types/index'
 
 interface ValidationSchema {
   body?: z.ZodType

@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { User } from 'src/databases/entities/user.entity.js'
+import { User } from 'src/databases/entities/user.entity'
 import { DataSource } from 'typeorm'
 
 class AppDataSource {
@@ -21,6 +21,10 @@ class AppDataSource {
     }
 
     return AppDataSource.instance
+  }
+
+  public static getDataSource(): DataSource {
+    return AppDataSource.getInstance()
   }
 
   public static async connect(): Promise<DataSource> {
