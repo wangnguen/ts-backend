@@ -1,4 +1,3 @@
-import { UserRole } from '@databases/entities/user.entity'
 import { z } from 'zod/v4'
 
 export const CreateUserBodySchema = z.object({
@@ -10,8 +9,7 @@ export const CreateUserBodySchema = z.object({
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
       'Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character'
-    ),
-  role: z.nativeEnum(UserRole).default(UserRole.USER)
+    )
 })
 
 export type CreateUserBody = z.infer<typeof CreateUserBodySchema>
@@ -27,8 +25,7 @@ export const UpdateUserBodySchema = z
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
         'Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character'
       )
-      .optional(),
-    role: z.nativeEnum(UserRole).optional()
+      .optional()
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided'

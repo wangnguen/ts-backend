@@ -1,30 +1,33 @@
 import AppDataSource from '@databases/data-source'
 import { CreateUserBody, UpdateUserBody } from './user.dto'
-import { User } from '@databases/entities/user.entity'
+import { User } from '@entities/user.entity'
 
 class UserRepository {
+  private static appDataSource = AppDataSource.getDataSource()
+  private static userRepository = this.appDataSource.getRepository(User)
+
   static create(data: CreateUserBody) {
-    return AppDataSource.getDataSource().getRepository(User).save(data)
+    return this.userRepository.save(data)
   }
   static find() {
-    return AppDataSource.getDataSource().getRepository(User).find()
+    return this.userRepository.find()
   }
   static update(id: string, data: UpdateUserBody) {
-    return AppDataSource.getDataSource().getRepository(User).update(id, data)
+    return this.userRepository.update(id, data)
   }
   static delete(id: string) {
-    return AppDataSource.getDataSource().getRepository(User).delete(id)
+    return this.userRepository.delete(id)
   }
 
   static findByUsername(username: string) {
-    return AppDataSource.getDataSource().getRepository(User).findOne({ where: { username } })
+    return this.userRepository.findOne({ where: { username } })
   }
 
   static findById(id: string) {
-    return AppDataSource.getDataSource().getRepository(User).findOne({ where: { id } })
+    return this.userRepository.findOne({ where: { id } })
   }
   static findByEmail(email: string) {
-    return AppDataSource.getDataSource().getRepository(User).findOne({ where: { email } })
+    return this.userRepository.findOne({ where: { email } })
   }
 }
 

@@ -1,99 +1,92 @@
 import { Request, Response, NextFunction } from 'express'
 import { ReasonPhrases, StatusCodes } from 'http-status-codes'
-import { ApiResponse } from '@common/utils/response.utils'
-import type { SuccessPayload, ErrorPayload } from '@common/types/index'
+import type { ResponseType } from '@common/types/index'
+import { ApiErrorResponse, ApiSuccessResponse } from '@common/models/api-response.model'
+
+type SuccessData<T> = ResponseType.SuccessData<T>
+type SuccessPayload = ResponseType.SuccessPayload
+type ErrorPayload = ResponseType.ErrorPayload
 
 class ResponseMiddleware {
-  static extendResponse = (_req: Request, res: Response, next: NextFunction) => {
-    res.ok = <T>(payload?: SuccessPayload<T>) => {
-      return ResponseMiddleware.sendSuccess(res, StatusCodes.OK, ReasonPhrases.OK, payload)
-    }
-
-    res.created = <T>(payload?: SuccessPayload<T>) => {
-      return ResponseMiddleware.sendSuccess(res, StatusCodes.CREATED, ReasonPhrases.CREATED, payload)
-    }
-
-    res.fail = (payload?: ErrorPayload) => {
-      return ResponseMiddleware.sendError(
-        res,
-        payload?.statusCode || StatusCodes.BAD_REQUEST,
-        ReasonPhrases.BAD_REQUEST,
-        payload
+  private static sendSuccess<T>(
+    res: Response,
+    data: SuccessData<T>,
+    statusCode: number = StatusCodes.OK,
+    defaultMessage: string = ReasonPhrases.OK,
+    payload?: SuccessPayload
+  ) {
+    return res
+      .status(statusCode)
+      .json(
+        new ApiSuccessResponse(
+          statusCode,
+          payload?.message || defaultMessage,
+          data,
+          res.req.originalUrl,
+          new Date().toISOString()
+        )
       )
+  }
+
+  private static sendError(
+    res: Response,
+    statusCode: number = StatusCodes.BAD_REQUEST,
+    defaultMessage: string = ReasonPhrases.BAD_REQUEST,
+    payload?: ErrorPayload
+  ) {
+    return res
+      .status(statusCode)
+      .json(
+        new ApiErrorResponse(
+          statusCode,
+          payload?.message || defaultMessage,
+          res.req.originalUrl,
+          new Date().toISOString(),
+          payload?.errors
+        )
+      )
+  }
+
+  static extendResponse = (_req: Request, res: Response, next: NextFunction) => {
+    res.ok = <T>(data: T, payload?: SuccessPayload) => {
+      return ResponseMiddleware.sendSuccess(res, data, StatusCodes.OK, ReasonPhrases.OK, payload)
+    }
+
+    res.created = <T>(data: T, payload?: SuccessPayload) => {
+      return ResponseMiddleware.sendSuccess(res, data, StatusCodes.CREATED, ReasonPhrases.CREATED, payload)
     }
 
     res.notFound = (payload?: ErrorPayload) => {
       return ResponseMiddleware.sendError(res, StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, payload)
     }
 
-    res.unauthorized = (payload?: ErrorPayload) => {
-      return ResponseMiddleware.sendError(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, payload)
-    }
-
-    res.forbidden = (payload?: ErrorPayload) => {
-      return ResponseMiddleware.sendError(res, StatusCodes.FORBIDDEN, ReasonPhrases.FORBIDDEN, payload)
+    res.fail = (payload?: ErrorPayload) => {
+      return ResponseMiddleware.sendError(
+        res,
+        payload?.statusCode || StatusCodes.BAD_REQUEST,
+        payload?.message || ReasonPhrases.BAD_REQUEST,
+        payload
+      )
     }
 
     res.validationError = (payload?: ErrorPayload) => {
-      const statusCode = StatusCodes.UNPROCESSABLE_ENTITY
-      return res
-        .status(statusCode)
-        .json(
-          new ApiResponse(
-            statusCode,
-            payload?.message || ReasonPhrases.UNPROCESSABLE_ENTITY,
-            res.req.originalUrl,
-            new Date().toISOString(),
-            undefined,
-            undefined,
-            payload?.errors
-          )
-        )
+      return ResponseMiddleware.sendError(
+        res,
+        payload?.statusCode || StatusCodes.UNPROCESSABLE_ENTITY,
+        payload?.message || ReasonPhrases.UNPROCESSABLE_ENTITY,
+        payload
+      )
     }
 
     res.internalError = (payload?: ErrorPayload) => {
-      const statusCode = StatusCodes.INTERNAL_SERVER_ERROR
-      return res
-        .status(statusCode)
-        .json(
-          new ApiResponse(
-            statusCode,
-            payload?.message || ReasonPhrases.INTERNAL_SERVER_ERROR,
-            res.req.originalUrl,
-            new Date().toISOString()
-          )
-        )
+      return ResponseMiddleware.sendError(
+        res,
+        payload?.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+        payload?.message || ReasonPhrases.INTERNAL_SERVER_ERROR,
+        payload
+      )
     }
-
     next()
-  }
-
-  private static sendSuccess<T>(
-    res: Response,
-    statusCode: number,
-    defaultMessage: string,
-    payload?: SuccessPayload<T>
-  ) {
-    return res
-      .status(statusCode)
-      .json(
-        new ApiResponse(
-          statusCode,
-          payload?.message || defaultMessage,
-          res.req.originalUrl,
-          new Date().toISOString(),
-          payload?.data,
-          payload?.meta
-        )
-      )
-  }
-
-  private static sendError(res: Response, statusCode: number, defaultMessage: string, payload?: ErrorPayload) {
-    return res
-      .status(statusCode)
-      .json(
-        new ApiResponse(statusCode, payload?.message || defaultMessage, res.req.originalUrl, new Date().toISOString())
-      )
   }
 }
 

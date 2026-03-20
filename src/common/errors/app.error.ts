@@ -1,5 +1,5 @@
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
-import type { ValidationErrorItem } from '@common/types/index'
+import { ValidationErrorItem } from '@common/types/response.type'
 
 export class AppError extends Error {
   constructor(

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod/v4'
 import { ValidationError } from '@common/errors/app.error'
-import type { ValidationErrorItem } from '@common/types/index'
+import { ValidationErrorItem } from '@common/types/response.type'
 
 interface ValidationSchema {
   body?: z.ZodType
@@ -22,8 +22,9 @@ class ValidationMiddleware {
         if (!result.success) {
           for (const issue of result.error.issues) {
             errors.push({
-              path: issue.path.length ? `${key}.${issue.path.join('.')}` : key,
-              message: issue.message
+              field: issue.path.length ? `${key}.${issue.path.join('.')}` : key,
+              message: issue.message,
+              code: issue.code
             })
           }
         }

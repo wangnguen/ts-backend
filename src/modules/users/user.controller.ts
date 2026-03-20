@@ -4,8 +4,8 @@ import { Request, Response } from 'express'
 
 class UserController {
   static async createUser(req: Request, res: Response) {
-    const { username, email, password, role } = req.body as CreateUserBody
-    await UserService.createUser({ username, email, password, role })
+    const { username, email, password } = req.body as CreateUserBody
+    await UserService.createUser({ username, email, password })
     res.created({ message: `User ${username} created successfully` })
   }
 
