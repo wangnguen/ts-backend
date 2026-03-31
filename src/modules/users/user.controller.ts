@@ -1,16 +1,17 @@
-import { CreateUserBody, UpdateUserBody, UuidParam } from '@modules/users/user.dto'
+import { CreateUserBody, PaginationQuery, UpdateUserBody, UuidParam } from '@modules/users/user.dto'
 import UserService from '@modules/users/user.service'
 import { Request, Response } from 'express'
 
 class UserController {
   static async createUser(req: Request, res: Response) {
-    const { username, email, password } = req.body as CreateUserBody
-    await UserService.createUser({ username, email, password })
+    const { username, email, password, fullName } = req.body as CreateUserBody
+    await UserService.createUser({ username, email, password, fullName })
     res.created(null, { message: `User ${username} created successfully` })
   }
 
-  static async getUsers(_req: Request, res: Response) {
-    const users = await UserService.getUsers()
+  static async getUsers(req: Request, res: Response) {
+    const pagination = req.query as unknown as PaginationQuery
+    const users = await UserService.getUsers(pagination)
     res.ok(users, { message: 'Users fetched successfully' })
   }
 

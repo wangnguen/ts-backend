@@ -1,5 +1,5 @@
 import AppDataSource from '@databases/data-source'
-import { CreateUserBody, UpdateUserBody } from './user.dto'
+import { CreateUserBody, PaginationQuery, UpdateUserBody } from './user.dto'
 import { User } from '@entities/user.entity'
 
 class UserRepository {
@@ -8,16 +8,23 @@ class UserRepository {
   }
 
   static create(data: CreateUserBody) {
-    return this.repo.save(data)
+    return this.repo.insert(data)
   }
-  static find() {
-    return this.repo.find()
+
+  static findAndCount(pagination: PaginationQuery) {
+    return this.repo.findAndCount({
+      take: pagination.limit,
+      skip: pagination.offset,
+      order: { createdAt: 'DESC' }
+    })
   }
+
   static update(id: string, data: UpdateUserBody) {
     return this.repo.update(id, data)
   }
-  static delete(id: string) {
-    return this.repo.delete(id)
+
+  static softDelete(id: string) {
+    return this.repo.softDelete(id)
   }
 
   static findByUsername(username: string) {
@@ -27,6 +34,7 @@ class UserRepository {
   static findById(id: string) {
     return this.repo.findOne({ where: { id } })
   }
+
   static findByEmail(email: string) {
     return this.repo.findOne({ where: { email } })
   }

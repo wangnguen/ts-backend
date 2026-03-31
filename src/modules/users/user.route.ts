@@ -1,11 +1,11 @@
 import { Router } from 'express'
 import UserController from './user.controller'
-import { CreateUserBodySchema, UpdateUserBodySchema, UuidParamSchema } from './user.dto'
-import { validateBody, validateParam } from '@common/middlewares'
+import { CreateUserBodySchema, PaginationQuerySchema, UpdateUserBodySchema, UuidParamSchema } from './user.dto'
+import { validateBody, validateParam, validateQuery } from '@common/middlewares'
 
 const router = Router()
 
-router.get('/', UserController.getUsers)
+router.get('/', validateQuery(PaginationQuerySchema), UserController.getUsers)
 
 router.post('/', validateBody(CreateUserBodySchema), UserController.createUser)
 

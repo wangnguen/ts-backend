@@ -17,19 +17,27 @@ export type UuidParam = z.infer<typeof UuidParamSchema>
 export const CreateUserBodySchema = z.object({
   username: z.string().min(3).max(30),
   email: z.email(),
-  password: passwordSchema
+  password: passwordSchema,
+  fullName: z.string().min(1).max(255)
 })
 
 export type CreateUserBody = z.infer<typeof CreateUserBodySchema>
 
 export const UpdateUserBodySchema = z
   .object({
-    username: z.string().min(3).max(30).optional(),
     email: z.email().optional(),
-    password: passwordSchema.optional()
+    password: passwordSchema.optional(),
+    fullName: z.string().min(1).max(255).optional()
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided'
   })
 
 export type UpdateUserBody = z.infer<typeof UpdateUserBodySchema>
+
+export const PaginationQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  offset: z.coerce.number().int().min(0).default(0)
+})
+
+export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
