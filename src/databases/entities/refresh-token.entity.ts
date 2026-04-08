@@ -7,13 +7,13 @@ export class RefreshToken extends BaseEntity {
   @Column({ unique: true, type: 'text' })
   token: string
 
-  @Column({ name: 'user_id' })
+  @Column({ type: 'uuid' })
   userId: string
 
-  @Column({ name: 'expires_at', type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   expiresAt: Date
 
-  @Column({ name: 'absolute_expires_at', type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   absoluteExpiresAt: Date
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })

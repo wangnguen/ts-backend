@@ -1,15 +1,19 @@
+import { Exclude } from 'class-transformer'
 import { PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
 
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Exclude({ toPlainOnly: true })
+  @CreateDateColumn()
   createdAt: Date
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @Exclude({ toPlainOnly: true })
+  @UpdateDateColumn()
   updatedAt: Date
 
-  @DeleteDateColumn({ name: 'deleted_at' })
+  @Exclude({ toPlainOnly: true })
+  @DeleteDateColumn()
   deletedAt: Date | null
 }

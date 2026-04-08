@@ -21,6 +21,7 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: USER_ROLE, default: USER_ROLE.USER })
   role: UserRole
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamp', nullable: true })
   lastLoginAt: Date | null
 }
