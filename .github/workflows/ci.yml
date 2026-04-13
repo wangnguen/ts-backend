@@ -10,10 +10,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '10'
-
 jobs:
   lint:
     name: Lint & Format
@@ -24,13 +20,11 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -51,13 +45,11 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -76,13 +68,11 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -90,13 +80,6 @@ jobs:
 
       - name: Build project
         run: pnpm build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
 
   # test:
   #   name: Test
@@ -129,13 +112,11 @@ jobs:
   #
   #     - name: Setup pnpm
   #       uses: pnpm/action-setup@v4
-  #       with:
-  #         version: ${{ env.PNPM_VERSION }}
   #
   #     - name: Setup Node.js
   #       uses: actions/setup-node@v4
   #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
+  #         node-version: 22
   #         cache: pnpm
   #
   #     - name: Install dependencies

@@ -1,8 +1,7 @@
 ###############
 # Build stage #
 ###############
-ARG NODE_VERSION=20
-FROM node:${NODE_VERSION}-alpine AS build
+FROM node:22-alpine AS build
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
@@ -27,7 +26,7 @@ RUN pnpm prune --prod
 #################
 # Runtime stage #
 #################
-FROM node:${NODE_VERSION}-alpine AS runtime
+FROM node:22-alpine AS runtime
 
 RUN apk add --no-cache dumb-init
 
