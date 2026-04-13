@@ -10,6 +10,9 @@ WORKDIR /app
 # Copy dependency manifests first (layer caching)
 COPY package.json pnpm-lock.yaml .npmrc ./
 
+# Skip husky install in Docker (no git hooks needed)
+ENV HUSKY=0
+
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
 
@@ -21,7 +24,7 @@ COPY src/ ./src/
 RUN pnpm build
 
 # Prune devDependencies
-RUN pnpm prune --prod
+RUN pnpm prune --prod --ignore-scripts
 
 #################
 # Runtime stage #
