@@ -6,6 +6,14 @@ class UserRepository {
     return this.userRepo.findOne({ where: { id } })
   }
 
+  static getUserByUsername(username: string) {
+    return this.userRepo.findOne({ where: { username } })
+  }
+
+  static updateUser(id: string, updateData: Partial<Pick<User, 'username' | 'fullName'>>) {
+    return this.userRepo.update({ id }, updateData)
+  }
+
   private static get userRepo() {
     return AppDataSource.getDataSource().getRepository(User)
   }
