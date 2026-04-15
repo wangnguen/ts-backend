@@ -1,8 +1,6 @@
-import { RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from '@common/constants/config.constant'
 import { ForbiddenError, UnauthorizedError } from '@common/errors/app.error'
 import { JWTService } from '@common/services'
 import { NextFunction, Request, Response } from 'express'
-import rateLimit from 'express-rate-limit'
 
 class AuthMiddleware {
   static authenticate(req: Request, _res: Response, next: NextFunction) {
