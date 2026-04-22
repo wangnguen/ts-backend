@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer'
-import { Entity, Column } from 'typeorm'
+import { Entity, Column, Index } from 'typeorm'
 
 import { USER_ROLE, UserRole } from '@common/constants'
 
@@ -20,6 +20,7 @@ export class User extends BaseEntity {
   @Column({ length: 255 })
   fullName: string
 
+  @Index('IDX_users_role')
   @Column({ type: 'enum', enum: USER_ROLE, default: USER_ROLE.USER })
   role: UserRole
 
@@ -27,7 +28,7 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   lastLoginAt: Date | null
 
-  @Exclude({ toPlainOnly: true })
+  @Index('IDX_users_google_id')
   @Column({ type: 'varchar', nullable: true, length: 255 })
   googleId?: string
 

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { env, logger } from '@common/config'
+import { env } from '@common/config'
 import { GOOGLE_AUTH } from '@common/constants'
 import { UnauthorizedError } from '@common/errors'
 import { GoogleTokenResponse, GoogleUserInfo } from '@common/types/auth.type'
@@ -9,6 +9,7 @@ class GoogleService {
   static async getProfileFromAuthCode(code: string) {
     try {
       const tokenResponse = await axios(GOOGLE_AUTH.VERIFY_TOKEN_URL, {
+        timeout: 5000,
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: new URLSearchParams({
@@ -28,6 +29,10 @@ class GoogleService {
 
       const userInfo = userResponse.data as GoogleUserInfo
 
+      if (!userInfo.verified_email) {
+        throw new UnauthorizedError('Google account email is not verified.')
+      }
+
       return {
         googleId: userInfo.id,
         email: userInfo.email,
@@ -35,7 +40,7 @@ class GoogleService {
         avatarUrl: userInfo.picture || null
       }
     } catch (error) {
-      logger.error(`Google OAuth failed ${error}`)
+      if (error instanceof UnauthorizedError) throw error
       throw new UnauthorizedError('Google authentication failed. Please try again.')
     }
   }

@@ -6,6 +6,7 @@ import { GOOGLE_AUTH, SALT_ROUNDS } from '@common/constants'
 import { ConflictError, UnauthorizedError } from '@common/errors'
 import { JWTService } from '@common/services'
 import { AuthResponse, AuthUser, GoogleProfile } from '@common/types'
+import { generateOAuthState, consumeOAuthState } from '@common/utils/oauth-state.store'
 
 import { User } from '@entities/user.entity'
 
@@ -91,24 +92,41 @@ class AuthService {
     return { accessToken, refreshToken: newRefreshToken }
   }
 
-  static createGoogleAuthUrl(): string {
+  static createGoogleAuthUrl(): { url: string; state: string } {
+    const state = generateOAuthState()
     const params = new URLSearchParams({
       client_id: env.GOOGLE_CLIENT_ID,
       redirect_uri: env.GOOGLE_CALLBACK_URL,
       response_type: 'code',
       scope: GOOGLE_AUTH.SCOPE,
-      prompt: 'select_account'
+      prompt: 'select_account',
+      state
     })
-    return `${GOOGLE_AUTH.URL}?${params.toString()}`
+    return { url: `${GOOGLE_AUTH.URL}?${params.toString()}`, state }
+  }
+
+  static verifyOAuthState(state: string): void {
+    if (!consumeOAuthState(state)) {
+      throw new UnauthorizedError('Invalid or expired OAuth state. Please try again.')
+    }
   }
 
   static async verifyGoogleCallback(profile: GoogleProfile): Promise<AuthResponse> {
     const existingUser = await AuthRepository.findByEmail(profile.email)
 
     if (existingUser) {
+      if (existingUser.googleId && existingUser.googleId !== profile.googleId) {
+        throw new UnauthorizedError('This email is already linked to a different Google account.')
+      }
+
+      if (!existingUser.googleId) {
+        throw new ConflictError(
+          'An account with this email already exists. Please log in with your password and link Google from your account settings.'
+        )
+      }
+
       await AuthRepository.updateGoogleProfile(existingUser.id, {
-        googleId: profile.googleId,
-        avatarUrl: profile.avatarUrl ?? undefined
+        avatarUrl: existingUser.avatarUrl ?? profile.avatarUrl ?? undefined
       })
       const { accessToken, refreshToken } = await AuthService.generateTokens(existingUser)
       const user = instanceToPlain(existingUser) as AuthUser

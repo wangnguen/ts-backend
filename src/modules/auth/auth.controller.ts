@@ -36,13 +36,15 @@ class AuthController {
   }
 
   static async getGoogleRedirectUrl(req: Request, res: Response) {
-    const url = AuthService.createGoogleAuthUrl()
+    const { url, state } = AuthService.createGoogleAuthUrl()
 
-    return res.ok({ url }, { message: 'Google OAuth URL generated successfully' })
+    return res.ok({ url, state }, { message: 'Google OAuth URL generated successfully' })
   }
 
   static async verifyGoogleCallback(req: Request, res: Response) {
     const body = req.body as GoogleCallbackBody
+
+    AuthService.verifyOAuthState(body.state)
 
     const { email, fullName, googleId, avatarUrl } = await GoogleService.getProfileFromAuthCode(body.code)
 

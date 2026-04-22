@@ -9,6 +9,7 @@ export class AddGoogleOAuthToUsers1776656120793 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "users" ADD "avatar_url" text`)
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "username" DROP NOT NULL`)
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "password" DROP NOT NULL`)
+    await queryRunner.query(`CREATE INDEX "IDX_refresh_tokens_user_id" ON "refresh_tokens" ("user_id") `)
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -70,7 +70,7 @@ class AuthRepository {
     return this.refreshTokenRepo.delete({ id })
   }
 
-  static updateGoogleProfile(id: string, data: { googleId: string; avatarUrl?: string }) {
+  static updateGoogleProfile(id: string, data: { avatarUrl?: string }) {
     return this.userRepo.update(id, data)
   }
 }
