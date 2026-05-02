@@ -3,8 +3,10 @@ import { NextFunction, Request, Response } from 'express'
 import { ForbiddenError, UnauthorizedError } from '@common/errors'
 import { JWTService } from '@common/services'
 
+import UserRepository from '@modules/user/user.repository'
+
 class AuthMiddleware {
-  static authenticate(req: Request, _res: Response, next: NextFunction) {
+  static async authenticate(req: Request, _res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -15,14 +17,20 @@ class AuthMiddleware {
 
     try {
       const payload = JWTService.verifyAccessToken(token)
-      req.user = {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.role
+      const user = await UserRepository.getUserById(payload.sub)
+
+      if (!user) {
+        return next(new UnauthorizedError('Invalid or expired access token'))
       }
-      next()
+
+      req.user = {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }
+      return next()
     } catch {
-      next(new UnauthorizedError('Invalid or expired access token'))
+      return next(new UnauthorizedError('Invalid or expired access token'))
     }
   }
 
