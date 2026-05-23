@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 
 const listFolderQueryBaseSchema = z.object({
-  folderPath: z.string().min(1)
+  folderPath: z.string().min(1).optional()
 })
 
 export const ListFolderQueryExample = {

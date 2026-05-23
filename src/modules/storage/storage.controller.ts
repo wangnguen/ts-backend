@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 
+import { BadRequestError } from '@common/errors'
+
 import StorageService from '@modules/storage/storage.service'
 
 import {
@@ -13,7 +15,8 @@ import {
 
 class StorageController {
   static async upload(req: Request, res: Response) {
-    const files = req.files as Express.Multer.File[]
+    const files = req.files as Express.Multer.File[] | undefined
+    if (!files || files.length === 0) throw new BadRequestError('No files provided')
     const saveLinks = StorageService.uploadFiles(files, req.body as UploadFileBody)
     return res.created({ saveLinks }, { message: 'Uploaded successfully' })
   }

@@ -69,7 +69,11 @@ class StorageService {
         return { name: item, createdAt: stat.birthtime, isDirectory: stat.isDirectory() }
       })
       .filter((item) => item.isDirectory)
-      .map(({ name, createdAt }) => ({ name, createdAt }))
+      .map(({ name, createdAt }) => ({
+        name,
+        path: folderPath ? `${folderPath}/${name}` : name,
+        createdAt
+      }))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
@@ -86,7 +90,7 @@ class StorageService {
       })
       .filter((item) => !item.isDirectory)
       .map(({ name, size, createdAt }) => ({
-        filename: name,
+        name,
         url: `/uploads${folderPath ? `/${folderPath}` : ''}/${name}`,
         size,
         createdAt
