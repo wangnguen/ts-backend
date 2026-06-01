@@ -2,6 +2,8 @@ import 'dotenv/config'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import SchedulerService from '@core/scheduler/scheduler.service'
+
 import env from '@common/config/env'
 import logger from '@common/config/logger'
 
@@ -22,12 +24,16 @@ const bootstrap = async () => {
 
   await AppDataSource.connect()
 
+  await SchedulerService.start()
+
   const server = app.listen(env.PORT, () => {
     logger.info(`Server is running on port ${env.PORT}`)
   })
 
   const gracefulShutdown = async (signal: string) => {
     logger.info(`${signal} received. Shutting down gracefully...`)
+
+    SchedulerService.stop()
 
     server.close(async () => {
       try {

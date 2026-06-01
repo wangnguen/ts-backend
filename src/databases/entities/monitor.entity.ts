@@ -13,8 +13,14 @@ export class Monitor extends BaseEntity {
   @Column({ type: 'enum', enum: MonitorType })
   type: MonitorType
 
-  @Column({ type: 'text' })
-  target: string
+  @Column({ type: 'text', nullable: true })
+  target: string | null
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  hostname: string | null
+
+  @Column({ type: 'int', nullable: true })
+  port: number | null
 
   @Column({ type: 'int', default: 60 })
   interval: number
