@@ -8,14 +8,14 @@ class StatusRecordController {
     const query = ListStatusRecordsQuerySchema.parse(req.query)
     const userId = req.user!.id
     const records = await StatusRecordService.listByMonitor(userId, query)
-    return res.ok(records, { message: 'Status records retrieved successfully' })
+    return res.ok({ records }, { message: 'Status records retrieved successfully' })
   }
 
   static async getStatusStats(req: Request, res: Response) {
     const query = StatusStatsQuerySchema.parse(req.query)
     const userId = req.user!.id
     const stats = await StatusRecordService.getStats(userId, query)
-    return res.ok(stats, { message: 'Status stats retrieved successfully' })
+    return res.ok({ stats }, { message: 'Status stats retrieved successfully' })
   }
 }
 
