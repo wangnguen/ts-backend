@@ -65,77 +65,79 @@ jobs:
           provenance: false
           sbom: false
 
-  deploy:
-    name: Deploy to VPS
-    runs-on: ubuntu-latest
-    needs: docker
-    if: success()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Copy config files to VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: 'docker-compose.prod.yml,infra/nginx/api-ts.conf'
-          target: '/srv/app/ts-backend'
-          overwrite: true
-
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            mkdir -p /srv/app/ts-backend/infra/nginx
-            cd /srv/app/ts-backend
-
-            # Check .env exists
-            if [ ! -f .env ]; then
-              echo "ERROR: .env file not found!"
-              echo "Please create .env file manually on VPS"
-              exit 1
-            fi
-
-            # Pull and deploy
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api-ecommerce:latest
-            docker compose -f docker-compose.prod.yml down 2>/dev/null || true
-            docker compose -f docker-compose.prod.yml up -d
-
-            # Check and update nginx config if changed
-            NEW_CHECKSUM=$(md5sum infra/nginx/api-ts.conf 2>/dev/null | awk '{print $1}')
-            OLD_CHECKSUM=""
-
-            if [ -f /etc/nginx/sites-available/api-ts ]; then
-              OLD_CHECKSUM=$(md5sum /etc/nginx/sites-available/api-ts | awk '{print $1}')
-            fi
-
-            if [ "$NEW_CHECKSUM" != "$OLD_CHECKSUM" ] && [ ! -z "$NEW_CHECKSUM" ]; then
-              echo "Updating nginx config..."
-              cp infra/nginx/api-ts.conf /etc/nginx/sites-available/api-ts
-              ln -sf /etc/nginx/sites-available/api-ts /etc/nginx/sites-enabled/api-ts
-              nginx -t && systemctl reload nginx
-              echo "✅ Nginx config updated"
-            else
-              echo "✅ Nginx config unchanged"
-            fi
-
-            docker image prune -f
+  # ===== VPS đang chết, tạm thời comment toàn bộ job deploy =====
+  # deploy:
+  #   name: Deploy to VPS
+  #   runs-on: ubuntu-latest
+  #   needs: docker
+  #   if: success()
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #
+  #     - name: Copy config files to VPS
+  #       uses: appleboy/scp-action@master
+  #       with:
+  #         host: ${{ secrets.VPS_HOST }}
+  #         username: root
+  #         key: ${{ secrets.VPS_SSH_KEY }}
+  #         source: 'docker-compose.prod.yml,infra/nginx/api-ts.conf'
+  #         target: '/srv/app/ts-backend'
+  #         overwrite: true
+  #
+  #     - name: Deploy to VPS
+  #       uses: appleboy/ssh-action@v1.0.0
+  #       with:
+  #         host: ${{ secrets.VPS_HOST }}
+  #         username: root
+  #         key: ${{ secrets.VPS_SSH_KEY }}
+  #         script: |
+  #           mkdir -p /srv/app/ts-backend/infra/nginx
+  #           cd /srv/app/ts-backend
+  #
+  #           # Check .env exists
+  #           if [ ! -f .env ]; then
+  #             echo "ERROR: .env file not found!"
+  #             echo "Please create .env file manually on VPS"
+  #             exit 1
+  #           fi
+  #
+  #           # Pull and deploy
+  #           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api-ecommerce:latest
+  #           docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+  #           docker compose -f docker-compose.prod.yml up -d
+  #
+  #           # Check and update nginx config if changed
+  #           NEW_CHECKSUM=$(md5sum infra/nginx/api-ts.conf 2>/dev/null | awk '{print $1}')
+  #           OLD_CHECKSUM=""
+  #
+  #           if [ -f /etc/nginx/sites-available/api-ts ]; then
+  #             OLD_CHECKSUM=$(md5sum /etc/nginx/sites-available/api-ts | awk '{print $1}')
+  #           fi
+  #
+  #           if [ "$NEW_CHECKSUM" != "$OLD_CHECKSUM" ] && [ ! -z "$NEW_CHECKSUM" ]; then
+  #             echo "Updating nginx config..."
+  #             cp infra/nginx/api-ts.conf /etc/nginx/sites-available/api-ts
+  #             ln -sf /etc/nginx/sites-available/api-ts /etc/nginx/sites-enabled/api-ts
+  #             nginx -t && systemctl reload nginx
+  #             echo "✅ Nginx config updated"
+  #           else
+  #             echo "✅ Nginx config unchanged"
+  #           fi
+  #
+  #           docker image prune -f
 
   notify:
     name: Telegram Notification
     runs-on: ubuntu-latest
-    needs: [ci-check, docker, deploy]
+    needs: [ci-check, docker] #deploy]
     if: always()
     steps:
       - name: Set result status
         id: status
         run: |
-          if [ "${{ needs.deploy.result }}" = "success" ]; then
+          # VPS chết: dùng kết quả của job docker thay cho deploy
+          if [ "${{ needs.docker.result }}" = "success" ]; then
             echo "emoji=✅" >> $GITHUB_OUTPUT
             echo "text=SUCCESS" >> $GITHUB_OUTPUT
           else
