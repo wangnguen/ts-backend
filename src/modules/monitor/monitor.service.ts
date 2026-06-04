@@ -1,3 +1,5 @@
+import SchedulerService from '@core/scheduler/scheduler.service'
+
 import { MonitorStatus } from '@common/constants/monitor.constant'
 import { ForbiddenError, NotFoundError } from '@common/errors'
 import { Paginated } from '@common/types'
@@ -21,30 +23,38 @@ class MonitorService {
   }
 
   static async createMonitor(dto: CreateMonitorBody, userId: string) {
-    return MonitorRepository.createMonitor({ ...dto, userId })
+    const monitor = await MonitorRepository.createMonitor({ ...dto, userId })
+    if (monitor.isActive) SchedulerService.scheduleMonitor(monitor)
+    return monitor
   }
 
   static async updateMonitor(id: string, userId: string, dto: UpdateMonitorBody) {
     await this.getMonitorById(id, userId)
     await MonitorRepository.updateMonitor(id, dto)
-    return MonitorRepository.findById(id)
+    const updated = await MonitorRepository.findById(id)
+    if (updated) SchedulerService.rescheduleMonitor(updated)
+    return updated
   }
 
   static async deleteMonitor(id: string, userId: string) {
     await this.getMonitorById(id, userId)
     await MonitorRepository.softDeleteMonitor(id)
+    SchedulerService.unscheduleMonitor(id)
   }
 
   static async pauseMonitor(id: string, userId: string) {
     await this.getMonitorById(id, userId)
     await MonitorRepository.updateMonitor(id, { isActive: false, currentStatus: MonitorStatus.PENDING })
+    SchedulerService.unscheduleMonitor(id)
     return MonitorRepository.findById(id)
   }
 
   static async startMonitor(id: string, userId: string) {
     await this.getMonitorById(id, userId)
     await MonitorRepository.updateMonitor(id, { isActive: true })
-    return MonitorRepository.findById(id)
+    const monitor = await MonitorRepository.findById(id)
+    if (monitor) SchedulerService.scheduleMonitor(monitor)
+    return monitor
   }
 }
 

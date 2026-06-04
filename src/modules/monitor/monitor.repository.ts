@@ -11,6 +11,10 @@ class MonitorRepository {
     return this.MonitorRepo.findAndCount({ where: { userId }, take: limit, skip: offset })
   }
 
+  static findAllActive() {
+    return this.MonitorRepo.find({ where: { isActive: true } })
+  }
+
   static createMonitor(monitor: Partial<Monitor>) {
     const newMonitor = this.MonitorRepo.create(monitor)
     return this.MonitorRepo.save(newMonitor)

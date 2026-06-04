@@ -13,6 +13,7 @@
     "paths": {
       "@common/*": ["./src/common/*"],
       "@modules/*": ["./src/modules/*"],
+      "@core/*": ["./src/core/*"],
       "@entities/*": ["./src/databases/entities/*"],
       "@databases/*": ["./src/databases/*"],
       "@docs/*": ["./src/docs/*"]
